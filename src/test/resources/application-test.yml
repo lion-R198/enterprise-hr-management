@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: enterprise-hr-management-test
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 【重要】测试库与开发库必须物理隔离。
+    # 集成测试的 test-cleanup.sql 会对约 40 张业务表做硬删除（DELETE + ALTER），
+    # 若指向开发库 enterprise_hr，每跑一次 mvn test 都会清空演示数据，
+    # 导致「跑测试」与「用演示环境」永远互斥。
+    # 因此这里固定指向 enterprise_hr_test（由 enterprise_hr 复制而来，初始数据一致）。
+    # 重建方式：
+    #   CREATE DATABASE enterprise_hr_test DEFAULT CHARACTER SET utf8mb4;
+    #   mysqldump -uroot -p123456 --single-transaction --default-character-set=utf8mb4 \
+    #     enterprise_hr | mysql -uroot -p123456 --default-character-set=utf8mb4 enterprise_hr_test
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${TEST_DB_NAME:enterprise_hr_test}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USER:root}
+    password: "${DB_PASSWORD:123456}"
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  global-config:
+    db-config:
+      # 与建表 DDL 保持一致：本库全部主键都是 AUTO_INCREMENT，
+      # 用 ASSIGN_ID（雪花）会写出超出 bigint 自增序列的 ID，污染 AUTO_INCREMENT 计数器
+      id-type: AUTO
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+logging:
+  level:
+    com.enterprise.hr: info
+    com.baomidou.mybatisplus: debug
+    org.apache.ibatis: debug
+    org.apache.ibatis.executor: trace
+    org.springframework: warn

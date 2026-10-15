@@ -1,0 +1,114 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      force: true
+
+spring:
+  application:
+    name: enterprise-hr-management
+  # 数据源：默认 enterprise_hr（本项目库，含 49 张表与演示数据）。
+  # 如需切换实例，用环境变量覆盖：DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASSWORD
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:enterprise_hr}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&allowMultiQueries=true
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:123456}
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: always
+    serialization:
+      # Long 主键超过 JS 安全整数范围会丢精度，统一按文本输出（前端按字符串处理）
+      write-dates-as-timestamps: false
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    # Slf4jImpl：MyBatis SQL 日志走 SLF4J，可被测试 Logback ListAppender 抓到
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    call-setters-on-nulls: true
+  global-config:
+    banner: false
+    db-config:
+      id-type: AUTO
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:mapper/**/*.xml
+
+# ---------------------------------------------------------------------------
+# 业务配置（自定义命名空间，避免与框架配置冲突）
+# ---------------------------------------------------------------------------
+ehr:
+  # JWT 令牌配置：secret 生产环境务必用环境变量覆盖
+  jwt:
+    secret: ${EHR_JWT_SECRET:ehr-enterprise-hr-management-hs256-secret-key-2026-please-override}
+    # 令牌有效期（分钟），与前端 401 自动登出策略配合
+    expire-minutes: ${EHR_JWT_EXPIRE_MINUTES:720}
+    issuer: enterprise-hr-management
+  # 登录安全策略（BR-09-01 / BR-09-03）
+  security:
+    max-login-fail: 5
+    lock-minutes: 30
+    init-password: Init@2026
+    # 免鉴权路径（Ant 风格），仅登录接口与接口文档
+    permit-urls:
+      - /auth/login
+      - /error
+      - /v3/api-docs/**
+      - /swagger-ui/**
+      - /swagger-ui.html
+      - /doc.html
+  # 业务阈值（与 sys_config 同步的兜底默认值）
+  business:
+    contract-warn-days: 60
+    leave-balance-year: 2026
+    work-start-time: "09:00:00"
+    work-end-time: "18:00:00"
+    # 迟到判定阈值，超过即计迟到（分钟）
+    late-threshold-minute: 5
+    # 单月薪资核算时个税起征点
+    tax-threshold: 5000
+
+# ---------------------------------------------------------------------------
+# 日志：应用日志 + 业务审计日志（sys_oper_log / sys_login_log）
+# ---------------------------------------------------------------------------
+logging:
+  level:
+    root: info
+    com.enterprise.hr: info
+    com.baomidou.mybatisplus: warn
+    org.springframework: warn
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/enterprise-hr-management.log
+
+# 接口文档（springdoc）
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  default-produces-media-type: application/json

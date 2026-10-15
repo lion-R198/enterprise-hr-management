@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>企业人事管理系统 — 功能结构图</title>
+<style>
+  :root {
+    --bg: #eef2f7;
+    --panel: #ffffff;
+    --line: #c3ceda;
+    --ink: #1e293b;
+    --ink-2: #475569;
+    --ink-3: #64748b;
+    --sub-bg: #f6f8fb;
+    --sub-border: #e2e8f0;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 32px 24px 48px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- 页头 ---------- */
+  .page-head {
+    max-width: 1480px;
+    margin: 0 auto 26px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .page-head h1 {
+    margin: 0 0 6px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .page-head .subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+  .stats {
+    display: flex;
+    gap: 10px;
+  }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--sub-border);
+    border-radius: 10px;
+    padding: 8px 16px;
+    text-align: center;
+    min-width: 92px;
+    box-shadow: 0 1px 2px rgba(30, 41, 59, 0.05);
+  }
+  .stat b {
+    display: block;
+    font-size: 20px;
+    color: #1d4ed8;
+    line-height: 1.2;
+  }
+  .stat span {
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+
+  /* ---------- 画布 ---------- */
+  .canvas-scroll {
+    max-width: 1480px;
+    margin: 0 auto;
+    overflow-x: auto;
+    padding: 4px 4px 12px;
+  }
+  .canvas {
+    min-width: 1420px;
+    background: var(--panel);
+    border: 1px solid var(--sub-border);
+    border-radius: 16px;
+    padding: 34px 26px 30px;
+    box-shadow: 0 6px 24px rgba(30, 41, 59, 0.07);
+  }
+
+  /* ---------- 根节点 ---------- */
+  .root-wrap { text-align: center; }
+  .root {
+    display: inline-block;
+    padding: 14px 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    color: #ffffff;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.32);
+  }
+
+  /* 根节点下来的主干竖线 */
+  .stem {
+    width: 2px;
+    height: 26px;
+    background: var(--line);
+    margin: 0 auto;
+  }
+
+  /* ---------- 分支树 ---------- */
+  .tree {
+    display: flex;
+    gap: 10px;
+    margin-top: 0;
+  }
+  .branch {
+    flex: 1 1 0;
+    position: relative;
+    padding-top: 26px;
+    display: flex;
+    flex-direction: column;
+  }
+  /* 横向总线 */
+  .branch::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--line);
+  }
+  .branch:first-child::before { left: 50%; }
+  .branch:last-child::before { right: 50%; }
+  /* 总线到模块卡片的竖直连接线 */
+  .branch::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+    height: 26px;
+    margin-left: -1px;
+    background: var(--line);
+  }
+
+  /* ---------- 模块卡片 ---------- */
+  .module {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--sub-border);
+    border-top: 3px solid var(--c);
+    border-radius: 10px;
+    padding: 11px 8px 11px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(30, 41, 59, 0.06);
+    z-index: 1;
+  }
+  .module .idx {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    color: #ffffff;
+    background: var(--c);
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+  }
+  .module .mname {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.5px;
+  }
+
+  /* ---------- 子功能列表 ---------- */
+  .subs {
+    list-style: none;
+    margin: 0;
+    padding: 10px 0 0 14px;
+    position: relative;
+    flex: 1 1 auto;
+  }
+  /* 子功能竖线 */
+  .subs::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 9px;
+    width: 1px;
+    background: var(--sub-border);
+  }
+  .subs li {
+    position: relative;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    background: var(--sub-bg);
+    border: 1px solid var(--sub-border);
+    border-left: 2px solid var(--c);
+    border-radius: 0 6px 6px 0;
+    padding: 6px 9px;
+    margin-bottom: 6px;
+    line-height: 1.35;
+    transition: background .15s, transform .15s;
+  }
+  .subs li::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 50%;
+    width: 6px;
+    height: 1px;
+    background: var(--sub-border);
+  }
+  .subs li:hover {
+    background: #eef4ff;
+    transform: translateX(2px);
+  }
+
+  /* ---------- 页脚 ---------- */
+  .legend {
+    max-width: 1480px;
+    margin: 20px auto 0;
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .legend i {
+    display: inline-block;
+    width: 22px;
+    height: 10px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+    font-style: normal;
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .canvas { box-shadow: none; border: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div>
+    <h1>企业人事管理系统 · 功能结构图</h1>
+    <p class="subtitle">Enterprise HR Management System — Functional Structure</p>
+  </div>
+  <div class="stats">
+    <div class="stat"><b>9</b><span>一级模块</span></div>
+    <div class="stat"><b>52</b><span>子功能项</span></div>
+    <div class="stat"><b>3</b><span>层级深度</span></div>
+  </div>
+</div>
+
+<div class="canvas-scroll">
+  <div class="canvas">
+
+    <div class="root-wrap">
+      <div class="root">企业人事管理系统</div>
+    </div>
+    <div class="stem"></div>
+
+    <div class="tree">
+
+      <!-- 01 首页 -->
+      <div class="branch" style="--c:#2563eb">
+        <div class="module"><span class="idx">01</span><span class="mname">首页</span></div>
+        <ul class="subs">
+          <li>数据概览</li>
+          <li>待办事项</li>
+          <li>通知公告</li>
+          <li>图表分析</li>
+          <li>快捷入口</li>
+        </ul>
+      </div>
+
+      <!-- 02 员工信息 -->
+      <div class="branch" style="--c:#0891b2">
+        <div class="module"><span class="idx">02</span><span class="mname">员工信息</span></div>
+        <ul class="subs">
+          <li>员工档案</li>
+          <li>入职办理</li>
+          <li>调动转岗</li>
+          <li>离职办理</li>
+          <li>合同管理</li>
+          <li>员工查询</li>
+        </ul>
+      </div>
+
+      <!-- 03 部门管理 -->
+      <div class="branch" style="--c:#7c3aed">
+        <div class="module"><span class="idx">03</span><span class="mname">部门管理</span></div>
+        <ul class="subs">
+          <li>组织架构</li>
+          <li>部门维护</li>
+          <li>岗位管理</li>
+          <li>人员编制</li>
+          <li>部门负责人</li>
+        </ul>
+      </div>
+
+      <!-- 04 考勤管理 -->
+      <div class="branch" style="--c:#059669">
+        <div class="module"><span class="idx">04</span><span class="mname">考勤管理</span></div>
+        <ul class="subs">
+          <li>打卡记录</li>
+          <li>请假申请</li>
+          <li>加班申请</li>
+          <li>出差管理</li>
+          <li>排班管理</li>
+          <li>考勤统计</li>
+        </ul>
+      </div>
+
+      <!-- 05 薪资管理 -->
+      <div class="branch" style="--c:#d97706">
+        <div class="module"><span class="idx">05</span><span class="mname">薪资管理</span></div>
+        <ul class="subs">
+          <li>薪资标准</li>
+          <li>薪资核算</li>
+          <li>薪资发放</li>
+          <li>社保公积金</li>
+          <li>个税申报</li>
+          <li>薪资条查询</li>
+        </ul>
+      </div>
+
+      <!-- 06 招聘管理 -->
+      <div class="branch" style="--c:#db2777">
+        <div class="module"><span class="idx">06</span><span class="mname">招聘管理</span></div>
+        <ul class="subs">
+          <li>招聘需求</li>
+          <li>职位发布</li>
+          <li>简历筛选</li>
+          <li>面试安排</li>
+          <li>录用审批</li>
+          <li>人才库</li>
+        </ul>
+      </div>
+
+      <!-- 07 培训管理 -->
+      <div class="branch" style="--c:#0d9488">
+        <div class="module"><span class="idx">07</span><span class="mname">培训管理</span></div>
+        <ul class="subs">
+          <li>培训计划</li>
+          <li>课程管理</li>
+          <li>讲师管理</li>
+          <li>报名签到</li>
+          <li>培训考核</li>
+          <li>培训档案</li>
+        </ul>
+      </div>
+
+      <!-- 08 绩效考核 -->
+      <div class="branch" style="--c:#dc2626">
+        <div class="module"><span class="idx">08</span><span class="mname">绩效考核</span></div>
+        <ul class="subs">
+          <li>考核方案</li>
+          <li>指标设置</li>
+          <li>绩效评分</li>
+          <li>绩效面谈</li>
+          <li>结果归档</li>
+          <li>绩效分析</li>
+        </ul>
+      </div>
+
+      <!-- 09 系统设置 -->
+      <div class="branch" style="--c:#475569">
+        <div class="module"><span class="idx">09</span><span class="mname">系统设置</span></div>
+        <ul class="subs">
+          <li>用户管理</li>
+          <li>角色权限</li>
+          <li>菜单管理</li>
+          <li>数据字典</li>
+          <li>参数配置</li>
+          <li>日志审计</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <span><i style="background:#2563eb"></i>01 首页</span>
+  <span><i style="background:#0891b2"></i>02 员工信息</span>
+  <span><i style="background:#7c3aed"></i>03 部门管理</span>
+  <span><i style="background:#059669"></i>04 考勤管理</span>
+  <span><i style="background:#d97706"></i>05 薪资管理</span>
+  <span><i style="background:#db2777"></i>06 招聘管理</span>
+  <span><i style="background:#0d9488"></i>07 培训管理</span>
+  <span><i style="background:#dc2626"></i>08 绩效考核</span>
+  <span><i style="background:#475569"></i>09 系统设置</span>
+</div>
+
+</body>
+</html>
